@@ -1,0 +1,25 @@
+{
+  "n_captures": 200000,
+  "n_samps": 8192,
+  "max_overlaps": 2,
+  "overlap_split": [0.5, 0.5],
+  "modulation": ["bpsk", "qpsk", "8psk", "16qam", "16apsk"],
+  "open-set_modulations": ["4ask", "8ask", "32qam", "64qam"],
+  "symbol_rate": 20,
+  "filter": [
+    {
+      "type": "rrc",
+      "beta": 0.35,
+      "delay": 1,
+      "dt": 0.0
+    }
+  ],
+  "channel": {
+    "type": "awgn",
+    "snr": [-10, 20, 2],
+    "fo": 0.0,
+    "po": 0.0
+  },
+  "verbose": 0,
+  "archive": false
+}

@@ -1,0 +1,24 @@
+{
+  "n_captures": 10,
+  "n_samps": 65536,
+  "max_overlaps": 2,
+  "modulation": ["16qam", "bpsk"],
+  "symbol_rate": 2,
+  "filter": [
+    {
+      "type": "rrc",
+      "beta": 0.005,
+      "delay": 1,
+      "dt": 0.0
+    }
+  ],
+  "channel": {
+    "type": "awgn",
+    "snr": 20,
+    "fo": 0.0,
+    "po": 0.0
+  },
+  "savepath": "/exports/eddie/scratch/s2062378/data/data_analysis",
+  "verbose": 0,
+  "archive": false
+}
