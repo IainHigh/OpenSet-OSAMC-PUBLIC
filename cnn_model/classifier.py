@@ -83,8 +83,8 @@ class ModulationClassifier(nn.Module):
         self.feature = nn.Sequential(
             nn.Linear(512, 256),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.2),
         )
+        self.classifier_dropout = nn.Dropout(0.2)
         self.classifier = nn.Linear(256, num_classes)
 
     def forward_features(self, x):
@@ -107,5 +107,5 @@ class ModulationClassifier(nn.Module):
         x = self.pool(x)
         x = self.flatten(x)
         features = self.feature(x)
-        logits = self.classifier(features)
+        logits = self.classifier(self.classifier_dropout(features))
         return logits, features

@@ -1,9 +1,9 @@
 {
-  "n_captures": 500000,
+  "n_captures": 1000000,
   "n_samps": 8192,
-  "max_overlaps": 2,
-  "overlap_split": [0.5, 0.5],
-  "modulation": ["bpsk", "qpsk", "8psk", "16qam", "16apsk"],
+  "max_overlaps": 3,
+  "overlap_split": [0.334, 0.333, 0.333],
+  "modulation": ["bpsk", "qpsk", "8psk", "16apsk"],
   "open-set_modulations": [],
   "symbol_rate": 20,
   "filter": [

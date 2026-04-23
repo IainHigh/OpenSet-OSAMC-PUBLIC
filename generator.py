@@ -10,24 +10,55 @@ The generated signals are saved in SigMF format for further analysis.
 
 ## standard imports
 import argparse
+import copy
 import json
 import os
 import ctypes
+from pathlib import Path
+from typing import Any, Dict, Optional, Sequence
 
 # third party imports
 from tqdm import tqdm
 import numpy as np
 
 ## internal imports
-from utils.sigmf_utils import save_sigmf, archive_sigmf
+from utils.sigmf_utils import save_sigmf
 from utils.config_utils import map_config
 
 
 BUF = 64
 HALF_BUF = BUF // 2
-## load c modules
-clinear = ctypes.CDLL(os.path.abspath("./cmodules/linear_modulate"))
-ctx = ctypes.CDLL(os.path.abspath("./cmodules/rrc_tx"))
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+CMODULE_DIR = PROJECT_ROOT / "cmodules"
+
+
+def _load_cdll(module_name: str) -> ctypes.CDLL:
+    """Load a shared library relative to this file, not the cwd."""
+    return ctypes.CDLL(str((CMODULE_DIR / module_name).resolve()))
+
+
+clinear = _load_cdll("linear_modulate")
+ctx = _load_cdll("rrc_tx")
+
+
+def load_config_file(config_file: str) -> Dict[str, Any]:
+    """Load a raw JSON config into memory."""
+    with open(config_file, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def prepare_generation_config(
+    raw_config: Dict[str, Any],
+    save_dir: str,
+) -> Dict[str, Any]:
+    """
+    Copy, inject the save path, and map the config into the form expected by
+    generate_linear().
+    """
+    config = copy.deepcopy(raw_config)
+    config["savepath"] = save_dir
+    return map_config(config, config)
 
 
 def generate_linear(config):
@@ -170,7 +201,46 @@ def generate_linear(config):
         save_sigmf(y_i_total, y_q_total, metadata, i)
 
 
-if __name__ == "__main__":
+def run_generator_from_config(
+    raw_config: Dict[str, Any],
+    save_dir: str,
+    rng_seed: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
+    Generate a dataset from a config already loaded into memory.
+    Returns the mapped config actually used.
+    """
+    if rng_seed is not None:
+        np.random.seed(rng_seed)
+
+    print("Contents of loaded configuration snapshot:")
+    print(json.dumps(raw_config, indent=4))
+    print("\n")
+
+    mapped_config = prepare_generation_config(raw_config, save_dir)
+    generate_linear(mapped_config)
+    return mapped_config
+
+
+def run_generator(
+    config_file: str,
+    save_dir: str,
+    rng_seed: Optional[int] = None,
+) -> Dict[str, Any]:
+    """CLI-friendly wrapper that loads the config from disk and runs generation."""
+    raw_config = load_config_file(config_file)
+    return run_generator_from_config(raw_config, save_dir, rng_seed)
+
+
+def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    """
+    Parses the command line arguments if entered through CLI.
+    Args:
+        argv (Optional[Sequence[str]], optional): Command line arguments. Defaults to None.
+
+    Returns:
+        argparse.Namespace: Parsed arguments from the command line.
+    """
     parser = argparse.ArgumentParser(
         description="Generate synthetic RF datasets from a JSON configuration."
     )
@@ -192,24 +262,22 @@ if __name__ == "__main__":
         default=None,
         help="Random seed for data generation.",
     )
-    args = parser.parse_args()
+    return parser.parse_args(argv)
 
-    if args.rng_seed is not None:
-        np.random.seed(args.rng_seed)
 
-    with open(args.config_file, encoding="utf-8") as f:
-        config_file = json.load(f)
+def cli(argv: Optional[Sequence[str]] = None) -> None:
+    """Helper function for when script is excecuted through CLI.
 
-    # Print a copy of the loaded configuration for archiving of results.
-    print(f"Contents of loaded configuration file ({args.config_file}):")
-    print(json.dumps(config_file, indent=4))
-    print("\n")
+    Args:
+        argv (Optional[Sequence[str]], optional): Command line arguments. Defaults to None.
+    """
+    args = parse_args(argv)
+    run_generator(
+        config_file=args.config_file,
+        save_dir=args.save_dir,
+        rng_seed=args.rng_seed,
+    )
 
-    # Inject savepath from CLI so map_config does not depend on JSON having it
-    config_file["savepath"] = args.save_dir
 
-    config_file = map_config(config_file, config_file)
-    generate_linear(config_file)
-
-    if config_file.get("archive", False):
-        archive_sigmf(config_file["savepath"])
+if __name__ == "__main__":
+    cli()

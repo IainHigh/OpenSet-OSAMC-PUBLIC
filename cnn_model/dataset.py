@@ -1,7 +1,6 @@
 """
 dataset.py:
-Defines a dataset for loading modulation samples with parallel metadata
-extraction and background prefetching of I/Q data.
+Defines a dataset for loading modulation samples of I/Q data.
 """
 
 # pylint: disable=import-error
@@ -32,13 +31,7 @@ def _normalize_iq_sample(x: np.ndarray) -> np.ndarray:
 
 
 class ModulationDataset(IterableDataset):
-    """Dataset for loading modulation data.
-
-    The dataset parses all metadata files in parallel during
-    initialization. Actual sample tensors are loaded on a background
-    thread and prefetched into a queue while the consumer iterates over
-    them.
-    """
+    """Dataset for loading modulation data."""
 
     def __init__(
         self,
