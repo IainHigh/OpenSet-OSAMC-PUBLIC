@@ -21,7 +21,6 @@ from torch.utils.data import DataLoader
 from torch import optim, nn
 from tqdm import tqdm
 import numpy as np
-from previous_sota_results import PREVIOUS_SOTA_ACCURACY, PREVIOUS_SOTA_SNRS
 
 # Local Imports
 from .dataset import ModulationDataset
@@ -373,6 +372,8 @@ def _series_from_case_accuracy_ratio(
 
 
 def _load_previous_sota_series() -> Tuple[List[int], Dict[int, Dict[int, float]]]:
+    from previous_sota_results import PREVIOUS_SOTA_ACCURACY, PREVIOUS_SOTA_SNRS
+
     snrs = list(PREVIOUS_SOTA_SNRS)
     previous_sota_series: Dict[int, Dict[int, float]] = {}
     for transmitter_count, accuracies in PREVIOUS_SOTA_ACCURACY.items():
