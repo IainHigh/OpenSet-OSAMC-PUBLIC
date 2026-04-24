@@ -18,9 +18,9 @@ class Config:
     BATCH_SIZE = 2048  # (B)
     EPOCHS = 40
     # q: Quantile used for Mahalanobis distance thresholds in OSR calibration.
-    OSR_QUANTILE = 0.95
+    OSR_QUANTILE = 0.90
     # T: Threshold for classification. If sigmoid(logit) > threshold, classify as present.
-    THRESHOLD_VALUE = 0.5
+    THRESHOLD_VALUE = 0.6
     TRIPLET_MARGIN = 1.0  # Triplet Margin (m)
 
     # Quantiles for hard positive/negative [p, n]
